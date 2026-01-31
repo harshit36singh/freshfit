@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Update this with your actual backend URL
-  static const String baseUrl = 'http://localhost:8000'; // Change to your backend URL
+  static const String baseUrl = 'https://freshfit-backend.onrender.com';
   
   // API endpoints
   static const String signupEndpoint = '/auth/signup';

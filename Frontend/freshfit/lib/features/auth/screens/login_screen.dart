@@ -222,7 +222,7 @@ Widget _buildLoginForm() {
     key: _formKey,
     child: Column(
       children: [
-        2
+        
         Center(
           child: Image.asset(
             'assets/img.png',

@@ -6,6 +6,7 @@ psycopg[binary]
 
 python-jose[cryptography]
 passlib[bcrypt]
+bcrypt==4.0.1
 
 python-multipart
 email-validator
@@ -14,5 +15,3 @@ opencv-python-headless
 numpy
 
 pydantic
-
-psycopg[binary]
