@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freshfit/HomeScreen.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/constants/strings.dart';
@@ -20,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen>
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -32,24 +33,22 @@ class _LoginScreenState extends State<LoginScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
       ),
     );
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.2, 0.8, curve: Curves.easeOutCubic),
-      ),
-    );
-    
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: const Interval(0.2, 0.8, curve: Curves.easeOutCubic),
+          ),
+        );
+
     _animationController.forward();
   }
 
@@ -64,18 +63,20 @@ class _LoginScreenState extends State<LoginScreen>
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       final authController = context.read<AuthController>();
-      
+
       final success = await authController.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      
+
       if (mounted) {
         if (success) {
           // Navigate to home screen
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(authController.successMessage ?? AppStrings.loginSuccess),
+              content: Text(
+                authController.successMessage ?? AppStrings.loginSuccess,
+              ),
               backgroundColor: AppColors.success,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
@@ -83,12 +84,17 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           );
-          // TODO: Navigate to home screen
-          // Navigator.pushReplacementNamed(context, '/home');
+         Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(builder: (_) => HomeScreen()),
+);
+
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(authController.errorMessage ?? AppStrings.loginError),
+              content: Text(
+                authController.errorMessage ?? AppStrings.loginError,
+              ),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
@@ -117,29 +123,29 @@ class _LoginScreenState extends State<LoginScreen>
                   children: [
                     const SizedBox(height: AppSizes.spacingXl),
                     _buildHeader(),
-                    
+
                     const SizedBox(height: AppSizes.spacingXl * 1.5),
-                    
+
                     // Welcome text
                     _buildWelcomeText(),
-                    
+
                     const SizedBox(height: AppSizes.spacingXl),
-                    
+
                     // Login form
                     _buildLoginForm(),
-                    
+
                     const SizedBox(height: AppSizes.spacingLg),
-                    
+
                     // Forgot password
                     _buildForgotPassword(),
-                    
+
                     const SizedBox(height: AppSizes.spacingXl),
-                    
+
                     // Login button
                     _buildLoginButton(),
-                    
+
                     const SizedBox(height: AppSizes.spacingXl),
-                    
+
                     // Sign up link
                     _buildSignUpLink(),
                   ],
@@ -202,92 +208,82 @@ class _LoginScreenState extends State<LoginScreen>
         Text(
           AppStrings.welcomeBack,
           style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                letterSpacing: -1.5,
-              ),
+            fontWeight: FontWeight.w800,
+            letterSpacing: -1.5,
+          ),
         ),
         const SizedBox(height: AppSizes.spacingSm),
         Text(
           AppStrings.loginSubtitle,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
         ),
       ],
     );
   }
 
-Widget _buildLoginForm() {
-  return Form(
-    key: _formKey,
-    child: Column(
-      children: [
-        
-        Center(
-          child: Image.asset(
-            'assets/img.png',
-            height: 250, // adjust as needed
-            fit: BoxFit.contain,
-          ),
-        ),
-
-        const SizedBox(height: AppSizes.spacingXl),
-
-        // Email field
-        TextFormField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          validator: Validators.email,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-          ),
-          decoration: InputDecoration(
-            labelText: AppStrings.email,
-            prefixIcon: const Icon(
-              Icons.email_outlined,
-              color: AppColors.textSecondary,
+  Widget _buildLoginForm() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          Center(
+            child: Image.asset(
+              'assets/img.png',
+              height: 250, // adjust as needed
+              fit: BoxFit.contain,
             ),
           ),
-        ),
 
-        const SizedBox(height: AppSizes.spacingLg),
+          const SizedBox(height: AppSizes.spacingXl),
 
-        // Password field
-        TextFormField(
-          controller: _passwordController,
-          obscureText: _obscurePassword,
-          validator: Validators.password,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-          ),
-          decoration: InputDecoration(
-            labelText: AppStrings.password,
-            prefixIcon: const Icon(
-              Icons.lock_outline,
-              color: AppColors.textSecondary,
-            ),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscurePassword
-                    ? Icons.visibility_off
-                    : Icons.visibility,
+          // Email field
+          TextFormField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            validator: Validators.email,
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+            decoration: InputDecoration(
+              labelText: AppStrings.email,
+              prefixIcon: const Icon(
+                Icons.email_outlined,
                 color: AppColors.textSecondary,
               ),
-              onPressed: () {
-                setState(() {
-                  _obscurePassword = !_obscurePassword;
-                });
-              },
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
 
+          const SizedBox(height: AppSizes.spacingLg),
+
+          // Password field
+          TextFormField(
+            controller: _passwordController,
+            obscureText: _obscurePassword,
+            validator: Validators.password,
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+            decoration: InputDecoration(
+              labelText: AppStrings.password,
+              prefixIcon: const Icon(
+                Icons.lock_outline,
+                color: AppColors.textSecondary,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  color: AppColors.textSecondary,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildForgotPassword() {
     return Align(
@@ -318,7 +314,9 @@ Widget _buildLoginForm() {
                     width: 24,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.black),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.black,
+                      ),
                     ),
                   )
                 : const Text(AppStrings.login),
@@ -340,16 +338,12 @@ Widget _buildLoginForm() {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const SignupScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const SignupScreen()),
             );
           },
           child: const Text(
             AppStrings.signup,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
       ],
