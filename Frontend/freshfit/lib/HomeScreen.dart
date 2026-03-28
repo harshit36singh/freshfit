@@ -1,12 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:freshfit/core/constants/colors.dart';
 import 'package:freshfit/core/services/camera_service.dart';
 import 'package:freshfit/features/dailyshowcase/daily_showcase_screen.dart';
-import 'package:freshfit/features/wardrobe/screens/add_cloth_screen.dart';
 import 'package:freshfit/features/wardrobe/screens/wardrobe_screen.dart'
     as addsheet;
-import '../core/services/camera_service.dart';
 import '../features/outfit/screens/outfit_history_screen.dart';
 import '../features/calendar/screens/calendar_screen.dart';
 import '../features/wardrobe/widgets/add_cloth_bottomsheet.dart' as addbottom;

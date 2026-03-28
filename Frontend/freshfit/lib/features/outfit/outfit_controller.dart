@@ -1,42 +1,110 @@
 import 'package:flutter/material.dart';
 import 'models/outfit_model.dart';
-import '../wardrobe/models/cloth_model.dart';
+import '../../core/services/api_service.dart';
+import '../../core/services/storage_service.dart';
 
 class OutfitController extends ChangeNotifier {
   List<OutfitModel> _outfits = [];
-  List<OutfitModel> _filteredOutfits = [];
+  bool _isLoading = false;
+  String? _errorMessage;
 
   List<OutfitModel> get outfits => _outfits;
-  List<OutfitModel> get filteredOutfits => _filteredOutfits;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
 
-  void addOutfit(OutfitModel outfit) {
-    _outfits.add(outfit);
-    _filteredOutfits = _outfits;
+  // Fetch all saved outfits from backend
+  Future<void> fetchOutfits() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final token = await StorageService.getToken();
+      if (token == null) {
+        _errorMessage = 'Please login again';
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      final result = await ApiService.getOutfits(token);
+
+      if (result['success']) {
+        final list = result['data'] as List;
+        _outfits = list.map((json) => OutfitModel.fromJson(json)).toList();
+      } else {
+        _errorMessage = result['message'];
+      }
+    } catch (e) {
+      _errorMessage = 'Failed to load outfits: $e';
+    }
+
+    _isLoading = false;
     notifyListeners();
   }
 
-  void updateOutfit(OutfitModel outfit) {
-    final index = _outfits.indexWhere((o) => o.id == outfit.id);
-    if (index != -1) {
-      _outfits[index] = outfit;
-      _filteredOutfits = _outfits;
+  // Generate outfit via backend
+  Future<OutfitModel?> generateOutfit({String? occasion, String? season}) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final token = await StorageService.getToken();
+      if (token == null) {
+        _errorMessage = 'Please login again';
+        _isLoading = false;
+        notifyListeners();
+        return null;
+      }
+
+      final result = await ApiService.generateOutfit(token);
+
+      if (result['success']) {
+        final outfit = OutfitModel.fromJson(result['data']);
+        _outfits.insert(0, outfit);
+        _isLoading = false;
+        notifyListeners();
+        return outfit;
+      } else {
+        _errorMessage = result['message'];
+        _isLoading = false;
+        notifyListeners();
+        return null;
+      }
+    } catch (e) {
+      _errorMessage = 'Failed to generate outfit: $e';
+      _isLoading = false;
       notifyListeners();
+      return null;
     }
   }
 
-  void deleteOutfit(String id) {
-    _outfits.removeWhere((o) => o.id == id);
-    _filteredOutfits = _outfits;
-    notifyListeners();
+  // Delete outfit
+  Future<bool> deleteOutfit(String id) async {
+    try {
+      final token = await StorageService.getToken();
+      if (token == null) return false;
+
+      final result = await ApiService.deleteOutfit(token: token, outfitId: id);
+      if (result['success']) {
+        _outfits.removeWhere((o) => o.id == id);
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
 
+  // Toggle favorite (local only)
   void toggleFavorite(String id) {
     final index = _outfits.indexWhere((o) => o.id == id);
     if (index != -1) {
       _outfits[index] = _outfits[index].copyWith(
         isFavorite: !_outfits[index].isFavorite,
       );
-      _filteredOutfits = _outfits;
       notifyListeners();
     }
   }
@@ -48,7 +116,6 @@ class OutfitController extends ChangeNotifier {
         timesWorn: _outfits[index].timesWorn + 1,
         lastWorn: DateTime.now(),
       );
-      _filteredOutfits = _outfits;
       notifyListeners();
     }
   }
@@ -61,49 +128,5 @@ class OutfitController extends ChangeNotifier {
     }
   }
 
-  List<OutfitModel> getFavorites() {
-    return _outfits.where((o) => o.isFavorite).toList();
-  }
-
-  List<OutfitModel> getByOccasion(String occasion) {
-    return _outfits.where((o) => o.occasion == occasion).toList();
-  }
-
-  // Generate outfit suggestion based on available clothes and occasion
-  OutfitModel? generateOutfit({
-    required List<ClothModel> availableClothes,
-    String? occasion,
-    String? season,
-  }) {
-    // Simple algorithm to suggest outfit
-    final tops = availableClothes
-        .where((c) => c.category == ClothCategory.tops)
-        .toList();
-    final bottoms = availableClothes
-        .where((c) => c.category == ClothCategory.bottoms)
-        .toList();
-    final shoes = availableClothes
-        .where((c) => c.category == ClothCategory.shoes)
-        .toList();
-
-    if (tops.isEmpty || bottoms.isEmpty || shoes.isEmpty) {
-      return null;
-    }
-
-    // Pick random items (in a real app, use AI/ML for better matching)
-    final selectedClothes = [
-      tops[0],
-      bottoms[0],
-      shoes[0],
-    ];
-
-    return OutfitModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: 'Generated Outfit',
-      clothes: selectedClothes,
-      createdDate: DateTime.now(),
-      occasion: occasion,
-      season: season,
-    );
-  }
+  List<OutfitModel> getFavorites() => _outfits.where((o) => o.isFavorite).toList();
 }
