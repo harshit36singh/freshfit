@@ -47,6 +47,7 @@ async def add_cloth_with_image(
         f.write(await file.read())
 
     color = extract_dominant_color(image_path)
+    image_url = build_image_url(image_path)  # <-- build before saving
 
     cloth = create_cloth(
         db=db,
@@ -55,12 +56,10 @@ async def add_cloth_with_image(
         category=category,
         color=color,
         image_path=image_path,
+        image_url=image_url,  # <-- pass into create
     )
-    cloth.image_url = build_image_url(cloth.image_path)
     print(f"name={name}, category={category}, file={file.filename}, type={file.content_type}")
     return cloth
-
-
 
 
 @router.get("/", response_model=list[ClothResponse])
@@ -68,10 +67,8 @@ def list_clothes(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    clothes = get_user_clothes(db, current_user.id) 
-    for cloth in clothes: 
-        cloth.image_url = build_image_url(cloth.image_path) 
-    return clothes
+    return get_user_clothes(db, current_user.id)  # <-- image_url already in DB, no loop needed
+
 
 @router.delete("/{cloth_id}")
 def remove_cloth(

@@ -9,12 +9,14 @@ def create_cloth(
     category: str,
     color: str,
     image_path: str | None = None,
+    image_url: str | None = None,  # <-- add this
 ):
     cloth = Cloth(
         name=name,
         category=category,
         color=color,
         image_path=image_path,
+        image_url=image_url,  # <-- add this
         user_id=user_id,
     )
     db.add(cloth)
