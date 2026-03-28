@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-
+import 'package:mime/mime.dart';
+import 'package:http_parser/http_parser.dart';
 class ApiService {
   static const String baseUrl = 'https://freshfit-backend.onrender.com';
   
@@ -75,38 +76,49 @@ static Future<Map<String, dynamic>> login({
   }
 }
 
-  // Upload cloth with image
-  static Future<Map<String, dynamic>> uploadCloth({
-    required String token,
-    required String name,
-    required String category,
-    required File imageFile,
-  }) async {
-    try {
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$baseUrl$uploadClothEndpoint'),
-      );
-      
-      request.headers['Authorization'] = 'Bearer $token';
-      request.fields['name'] = name;
-      request.fields['category'] = category;
-      request.files.add(await http.MultipartFile.fromPath('file', imageFile.path));
-      
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-      
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return {'success': true, 'data': data};
-      } else {
-        final data = jsonDecode(response.body);
-        return {'success': false, 'message': data['detail'] ?? 'Upload failed'};
-      }
-    } catch (e) {
-      return {'success': false, 'message': 'Network error. Please try again.'};
+// Upload cloth with image
+static Future<Map<String, dynamic>> uploadCloth({
+  required String token,
+  required String name,
+  required String category,
+  required File imageFile,
+}) async {
+  try {
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl$uploadClothEndpoint'),
+    );
+
+    request.headers['Authorization'] = 'Bearer $token';
+    request.fields['name'] = name;
+    request.fields['category'] = category;
+
+    // ✅ Detect and set MIME type explicitly
+    final mimeType = lookupMimeType(imageFile.path) ?? 'image/jpeg';
+    final mimeParts = mimeType.split('/');
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'file',
+        imageFile.path,
+        contentType: MediaType(mimeParts[0], mimeParts[1]),
+      ),
+    );
+
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return {'success': true, 'data': data};
+    } else {
+      final data = jsonDecode(response.body);
+      return {'success': false, 'message': data['detail'] ?? 'Upload failed'};
     }
+  } catch (e) {
+    return {'success': false, 'message': 'Network error. Please try again.'};
   }
+}
   
   // Get user's wardrobe
   static Future<Map<String, dynamic>> getWardrobe(String token) async {

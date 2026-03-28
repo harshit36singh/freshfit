@@ -62,23 +62,23 @@ class OutfitModel {
     };
   }
 
-  factory OutfitModel.fromJson(Map<String, dynamic> json) {
-    return OutfitModel(
-      id: json['id'],
-      name: json['name'],
-      clothes: (json['clothes'] as List)
-          .map((c) => ClothModel.fromJson(c))
-          .toList(),
-      createdDate: DateTime.parse(json['createdDate']),
-      occasion: json['occasion'],
-      season: json['season'],
-      isFavorite: json['isFavorite'] ?? false,
-      timesWorn: json['timesWorn'] ?? 0,
-      lastWorn: json['lastWorn'] != null
-          ? DateTime.parse(json['lastWorn'])
-          : null,
-    );
-  }
+factory OutfitModel.fromJson(Map<String, dynamic> json) {
+  return OutfitModel(
+    id: json['id'].toString(),        // backend sends int, convert to String
+    name: json['name'] ?? 'Generated Outfit',
+    clothes: (json['clothes'] as List)
+        .map((c) => ClothModel.fromJson(c))
+        .toList(),
+    createdDate: DateTime.parse(json['created_at']),  // ← was 'createdDate'
+    occasion: json['occasion'],
+    season: json['season'],
+    isFavorite: json['isFavorite'] ?? false,
+    timesWorn: json['timesWorn'] ?? 0,
+    lastWorn: json['lastWorn'] != null
+        ? DateTime.parse(json['lastWorn'])
+        : null,
+  );
+}
 }
 
 // Occasions
