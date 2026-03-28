@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:freshfit/core/constants/colors.dart';
-import 'package:freshfit/core/constants/sizes.dart';
 import 'package:freshfit/features/outfit/outfit_controller.dart';
 import 'package:provider/provider.dart';
 import '../calendar_controller.dart';
+
+const _kBg = Color(0xFFF2EBE2);
+const _kAccent = Color(0xFF614051);
+const _kAccentFade = Color(0x99614051);
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -19,37 +21,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _kBg,
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(AppSizes.paddingLg),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Outfit Calendar',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -1,
-                          ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Simple calendar view
+            _buildHeader(),
+            const SizedBox(height: 10),
             _buildCalendar(),
-            
-            const SizedBox(height: AppSizes.spacingLg),
-            
-            // Selected day's outfit
-            Expanded(
-              child: _buildSelectedDayOutfit(),
-            ),
+            const SizedBox(height: 16),
+            Expanded(child: _buildSelectedDayOutfit()),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
+      child: const Text(
+        'Outfit Calendar',
+        style: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.w900,
+          color: _kAccent,
+          letterSpacing: -1,
+          height: 1.1,
         ),
       ),
     );
@@ -57,59 +55,60 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Widget _buildCalendar() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSizes.paddingLg),
-      padding: const EdgeInsets.all(AppSizes.paddingLg),
+      margin: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: _kAccent, width: 2),
       ),
       child: Column(
         children: [
-          // Month/Year header
+          // Month nav row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _focusedDay = DateTime(
-                      _focusedDay.year,
-                      _focusedDay.month - 1,
-                    );
-                  });
-                },
-                icon: const Icon(Icons.chevron_left, color: AppColors.textPrimary),
+              GestureDetector(
+                onTap: () => setState(() {
+                  _focusedDay = DateTime(_focusedDay.year, _focusedDay.month - 1);
+                }),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  child: const Icon(Icons.chevron_left, color: _kAccent, size: 24),
+                ),
               ),
               Text(
                 '${_getMonthName(_focusedDay.month)} ${_focusedDay.year}',
                 style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
+                  color: _kAccent,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _focusedDay = DateTime(
-                      _focusedDay.year,
-                      _focusedDay.month + 1,
-                    );
-                  });
-                },
-                icon: const Icon(Icons.chevron_right, color: AppColors.textPrimary),
+              GestureDetector(
+                onTap: () => setState(() {
+                  _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1);
+                }),
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  child: const Icon(Icons.chevron_right, color: _kAccent, size: 24),
+                ),
               ),
             ],
           ),
-          
-          const SizedBox(height: 16),
-          
-          // Simple grid representation
-          Text(
-            'Tap a date to schedule an outfit',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
+
+          // Divider
+          Container(height: 2, color: _kAccent),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+            child: const Text(
+              'Tap a date to schedule an outfit',
+              style: TextStyle(
+                color: _kAccentFade,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -119,7 +118,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Widget _buildSelectedDayOutfit() {
     return Consumer<CalendarController>(
-      builder: (context, controller, child) {
+      builder: (context, controller, _) {
         final selectedDate = controller.selectedDate;
         final outfit = controller.getOutfitForDate(selectedDate);
 
@@ -128,25 +127,52 @@ class _CalendarScreenState extends State<CalendarScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.event_available,
-                  size: 64,
-                  color: AppColors.textSecondary,
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: _kAccent, width: 2),
+                  ),
+                  child: const Icon(Icons.event_available, size: 40, color: _kAccent),
                 ),
                 const SizedBox(height: 16),
-                Text(
+                const Text(
                   'No outfit scheduled',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: _kAccent,
+                    letterSpacing: -0.5,
+                  ),
                 ),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    _showOutfitPicker(context, selectedDate);
-                  },
-                  icon: const Icon(Icons.add, color: AppColors.black),
-                  label: const Text('Schedule Outfit'),
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () => _showOutfitPicker(context, selectedDate),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: _kAccent,
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(color: _kAccent, width: 2),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.add, color: _kBg, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Schedule Outfit',
+                          style: TextStyle(
+                            color: _kBg,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -154,38 +180,74 @@ class _CalendarScreenState extends State<CalendarScreen> {
         }
 
         return Padding(
-          padding: const EdgeInsets.all(AppSizes.paddingLg),
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Scheduled Outfit',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: _kAccent,
+                  letterSpacing: -0.5,
+                ),
               ),
-              const SizedBox(height: 16),
-              Card(
-                color: AppColors.surface,
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(AppSizes.paddingMd),
-                  title: Text(
-                    outfit.name,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(color: _kAccent, width: 2),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 54,
+                      height: 54,
+                      margin: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(color: _kAccent, width: 2),
+                      ),
+                      child: const Icon(Icons.style, color: _kAccent, size: 24),
                     ),
-                  ),
-                  subtitle: Text(
-                    outfit.occasion ?? 'No occasion',
-                    style: const TextStyle(color: AppColors.textSecondary),
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.error),
-                    onPressed: () {
-                      controller.removeScheduledOutfit(selectedDate);
-                    },
-                  ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              outfit.name,
+                              style: const TextStyle(
+                                color: _kAccent,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              outfit.occasion ?? 'No occasion',
+                              style: const TextStyle(
+                                color: _kAccentFade,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => controller.removeScheduledOutfit(selectedDate),
+                      child: const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: Icon(Icons.close, color: _kAccent, size: 20),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -197,41 +259,68 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   void _showOutfitPicker(BuildContext context, DateTime date) {
     final outfitController = context.read<OutfitController>();
-    
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: _kBg,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSizes.radiusXl)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(5)),
+        side: BorderSide(color: _kAccent, width: 2),
       ),
       builder: (context) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.all(AppSizes.paddingLg),
-                child: Text(
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 10),
+                child: const Text(
                   'Select Outfit',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: _kAccent,
+                    letterSpacing: -0.5,
+                  ),
                 ),
               ),
+              Container(height: 2, color: _kAccent),
               ...outfitController.outfits.map((outfit) {
-                return ListTile(
-                  title: Text(
-                    outfit.name,
-                    style: const TextStyle(color: AppColors.textPrimary),
-                  ),
-                  subtitle: Text(
-                    outfit.occasion ?? 'No occasion',
-                    style: const TextStyle(color: AppColors.textSecondary),
-                  ),
+                return GestureDetector(
                   onTap: () {
                     context.read<CalendarController>().scheduleOutfit(date, outfit);
                     Navigator.pop(context);
                   },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: _kAccentFade, width: 1),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          outfit.name,
+                          style: const TextStyle(
+                            color: _kAccent,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
+                        ),
+                        Text(
+                          outfit.occasion ?? 'No occasion',
+                          style: const TextStyle(
+                            color: _kAccentFade,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               }),
               const SizedBox(height: 16),
@@ -244,18 +333,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   String _getMonthName(int month) {
     const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
     ];
     return months[month - 1];
   }

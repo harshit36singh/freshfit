@@ -41,7 +41,7 @@ dependencies:
   path_provider: ^2.1.5
   image: ^4.7.2
   google_fonts: ^8.0.0
-  model_viewer_plus: ^1.7.2
+  model_viewer_plus: ^1.8.0
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +69,8 @@ flutter:
   assets:
     - assets/img.png
     - assets/singh.glb
+    - assets/back1.jpg
+    - assets/model-viewer.min.js
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
