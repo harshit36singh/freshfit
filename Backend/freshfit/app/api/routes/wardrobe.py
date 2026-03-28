@@ -57,7 +57,9 @@ async def add_cloth_with_image(
         image_path=image_path,
     )
     cloth.image_url = build_image_url(cloth.image_path)
+    print(f"name={name}, category={category}, file={file.filename}, type={file.content_type}")
     return cloth
+
 
 
 
