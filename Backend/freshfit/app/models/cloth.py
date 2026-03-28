@@ -11,5 +11,6 @@ class Cloth(Base):
     color = Column(String, nullable=False)
 
     image_path = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)   # <-- add this
 
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
